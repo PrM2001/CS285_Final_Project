@@ -24,13 +24,14 @@ cost = SymbolicCost(name="double_integrator_cost",
                                       num_inputs=1)
 
 d_nom = 0.0
+hyperparams = {"max_iters": 5, 
+               "conv_criterion": 8} 
+
 settings = {"initial_state": np.array([0, 0]),
             "horizon": 1000,
             "d_nom": d_nom,
             "reset_prop": 0.8,
             }
-hyperparams = {"max_iters": 5, 
-               "conv_criterion": 8} 
 
 problem = Problem(name="double_integrator_baseline",
                   dyn=dynamics,
@@ -38,6 +39,41 @@ problem = Problem(name="double_integrator_baseline",
                   settings=settings,
                   hyperparams=hyperparams)
 
-controller = RHDDP(problem, action=None)
-solution = controller.solve()
+#TODO:
+K = 
+
+
+#everythign above happens once:
+
+#this is inside the training loop:
+
+#TODO: draw initial_state, horizon, reset from distributions (horizon uniformly between 100 and 400 maybe), 
+# reset prop uniformly from 0.2 to 0.8, initial state uniformly around 0,0 (maybe 5 in each direction)
+initial_state = ...
+horizon = ...
+reset_prop = ...
+
+problem.update(initial_state=initial_state, horizon=horizon, reset_prop=reset_prop)
+
+#TODO: draw action from rl agent, given state
+state = ...
+action = ...
+
+vanilla_controller = RHDDP(problem, action=None)
+vanilla_solution = vanilla_controller.solve()
+
+rl_controller = RHDDP(problem, action=action)
+rl_solution = rl_controller.solve()
+
+for _ in range(K):
+    #TODO: Draw disturbance:
+    disturbance = ...
+    
+    #TODO: create evaluation function for each, on the disturbance
+
+
+
+
+
+# need to roll out and compute cost over disturbances.
 
