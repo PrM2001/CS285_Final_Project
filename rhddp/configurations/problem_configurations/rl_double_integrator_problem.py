@@ -65,9 +65,21 @@ vanilla_solution = vanilla_controller.solve()
 rl_controller = RHDDP(problem, action=action)
 rl_solution = rl_controller.solve()
 
+vanilla_x_traj = vanilla_solution.get("x_traj")
+vanilla_u_traj = vanilla_solution.get("u_traj")
+vanilla_K_traj = vanilla_solution.get("K_traj")
+
+rl_x_traj = vanilla_solution.get("x_traj")
+rl_u_traj = vanilla_solution.get("u_traj")
+rl_K_traj = vanilla_solution.get("K_traj")
+
+
 for _ in range(K):
     #TODO: Draw disturbance:
     disturbance = ...
+    c_nom = vanilla_controller.rollout_cost(vanilla_x_traj, vanilla_u_traj, vanilla_K_traj, disturbance)
+    c_rl= rl_controller.rollout_cost(rl_x_traj, rl_u_traj, rl_K_traj, disturbance)
+    reward = (c_nom - c_rl)/c_nom 
     
     #TODO: create evaluation function for each, on the disturbance
 
