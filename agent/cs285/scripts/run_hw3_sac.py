@@ -51,7 +51,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     # replace env.reset with initial_observation
     observation = initial_observation
 
-     for step in tqdm.trange(config["total_steps"], dynamic_ncols=True):
+    for step in tqdm.trange(config["total_steps"], dynamic_ncols=True):
 
         # TODO: Not sure if we should keep a random step section
         if step < config["random_steps"]:

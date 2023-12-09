@@ -1,0 +1,12 @@
+setup.py
+rhddp/cost.py
+rhddp/dynamics.py
+rhddp/problem.py
+rhddp/rhddp.py
+rhddp/sandbox.py
+rhddp/trajectory.py
+rhddp/vis.py
+rhddp.egg-info/PKG-INFO
+rhddp.egg-info/SOURCES.txt
+rhddp.egg-info/dependency_links.txt
+rhddp.egg-info/top_level.txt
