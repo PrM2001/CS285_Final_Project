@@ -63,8 +63,8 @@ class Problem():
 
         self._reset_step = int(self.reset_prop * self.horizon)
         
-        
-        print(f'Done building problem {name}, with the following hyperparameters changed from the defaults: \n {hyperparams}\n') #make this print out hyperparameters later for debugging help
+        #Problem creation print statement
+        #print(f'Done building problem {name}, with the following hyperparameters changed from the defaults: \n {hyperparams}\n') #make this print out hyperparameters later for debugging help
         
     #region Dynamics Methods
     def step(self, x, u):
@@ -142,3 +142,7 @@ class Problem():
         return costValue
     #endregion Cost Methods
 
+    def update(self, initial_state, horizon, reset_prop):
+        self.initial_state = initial_state
+        self.horizon = horizon
+        self._reset_step = int(reset_prop * self.horizon)

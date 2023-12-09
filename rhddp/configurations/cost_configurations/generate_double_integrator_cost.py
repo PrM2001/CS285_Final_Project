@@ -28,7 +28,7 @@ terminal_cost = (terminal_state - goal_state).T * Qn * (terminal_state - goal_st
 
 
 # params_dict = {goal_state: np.array([5, 0])}
-params_dict = {goal_state[0]: 5, goal_state[1]: 0}
+params_dict = {goal_state[0]: 0, goal_state[1]: 0}
 running_cost = running_cost.subs(params_dict)
 terminal_cost = terminal_cost.subs(params_dict)
 
