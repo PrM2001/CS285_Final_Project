@@ -93,6 +93,31 @@ class RHDDP():
         cost = self._prob.calculate_cost(x_traj_new, u_traj_new) 
         return Trajectory(x_traj_new, u_traj_new, dist, cost) 
 
+    def rollout_cost(self, x_traj, u_traj, K_traj, dist):
+        horizon = self._prob.horizon
+        reset = int(self._prob.reset_prop * horizon)
+
+        numStates = self._prob.num_states
+        numInputs = self._prob.num_inputs
+        
+        x_traj_new = np.zeros((numStates, horizon + 2))
+        u_traj_new = np.zeros((numInputs, horizon))
+
+        x_traj_new[:, 0] = prev_state = self._prob.initial_state
+
+        for i in range(reset):
+            u_traj_new[:, i] = u_traj[:, i] + K_traj[:, :, i] @ (x_traj_new[:, i] - x_traj[:, i])
+            x_traj_new[:, i+1] = prev_state = self._prob.step(prev_state, u_traj[:,i])
+
+        x_traj_new[:, reset + 1] = prev_state = self._prob.reset(prev_state, dist)
+                
+        for i in range(reset + 1, horizon + 1):
+            u_traj_new[:, i - 1] = u_traj[:, i - 1] + K_traj[:, :, i - 1] @ (x_traj_new[:, i] - x_traj[:, i])
+            x_traj_new[:, i+1] = prev_state = self._prob.step(prev_state, u_traj_new[:, i - 1])
+
+        return self._prob.calculate_cost(x_traj_new, u_traj_new) 
+
+
     def initial_rollout(self, u_traj, K_traj):
 
         d_nom = self._prob.d_nom
