@@ -1,0 +1,6 @@
+gen/
+data/
+*.pyc
+*.csv
+*.mat
+*.png
