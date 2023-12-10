@@ -1,6 +1,6 @@
 from typing import Tuple, Optional
 
-import gym
+# import gym
 
 import numpy as np
 import torch
@@ -10,13 +10,13 @@ from cs285.networks.mlp_policy import MLPPolicy
 from cs285.networks.state_action_value_critic import StateActionCritic
 import cs285.infrastructure.pytorch_util as ptu
 
-from gym.wrappers.rescale_action import RescaleAction
-from gym.wrappers.clip_action import ClipAction
-from gym.wrappers.record_episode_statistics import RecordEpisodeStatistics
+# from gym.wrappers.rescale_action import RescaleAction
+# from gym.wrappers.clip_action import ClipAction
+# from gym.wrappers.record_episode_statistics import RecordEpisodeStatistics
 
 
 def sac_config(
-    env_name: str,
+    # env_name: str,
     exp_name: Optional[str] = None,
     hidden_size: int = 128,
     num_layers: int = 3,
@@ -89,22 +89,22 @@ def sac_config(
     ) -> torch.optim.lr_scheduler._LRScheduler:
         return torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1.0)
 
-    def make_env(render: bool = False):
-        return RecordEpisodeStatistics(
-            ClipAction(
-                RescaleAction(
-                    gym.make(
-                        env_name, render_mode="single_rgb_array" if render else None
-                    ),
-                    -1,
-                    1,
-                )
-            )
-        )
+    # def make_env(render: bool = False):
+    #     return RecordEpisodeStatistics(
+    #         ClipAction(
+    #             RescaleAction(
+    #                 gym.make(
+    #                     env_name, render_mode="single_rgb_array" if render else None
+    #                 ),
+    #                 -1,
+    #                 1,
+    #             )
+    #         )
+    #     )
 
-    log_string = "{}_{}_{}_s{}_l{}_alr{}_clr{}_b{}_d{}".format(
+    log_string = "{}_{}_s{}_l{}_alr{}_clr{}_b{}_d{}".format(
         exp_name or "offpolicy_ac",
-        env_name,
+        # env_name,
         actor_gradient_type,
         hidden_size,
         num_layers,
@@ -157,5 +157,5 @@ def sac_config(
         "training_starts": training_starts,
         "ep_len": ep_len,
         "batch_size": batch_size,
-        "make_env": make_env,
+        # "make_env": make_env,
     }

@@ -2,43 +2,33 @@ from collections import OrderedDict
 import numpy as np
 import copy
 from cs285.networks.mlp_policy import MLPPolicy
-import gym
 import cv2
 from cs285.infrastructure import pytorch_util as ptu
 from typing import Dict, Tuple, List
+
+from rhddp.problem import Problem
+from rhddp.cost import SymbolicCost
+from rhddp.dynamics import SymbolicDynamics
+from rhddp.rhddp import RHDDP
 
 ############################################
 ############################################
 
 
 def sample_trajectory(
-    env: gym.Env, policy: MLPPolicy, max_length: int, render: bool = False
+    policy: MLPPolicy, max_length: int, render: bool = False, problem=None
 ) -> Dict[str, np.ndarray]:
     """Sample a rollout in the environment from a policy."""
-    ob = env.reset()
+    ob = reset_env()
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
     steps = 0
 
     while True:
-        # render an image
-        if render:
-            if hasattr(env, "sim"):
-                img = env.sim.render(camera_name="track", height=500, width=500)[::-1]
-            else:
-                img = env.render(mode="rgb_array")
-            
-            if isinstance(img, list):
-                img = img[0]
-
-            image_obs.append(
-                cv2.resize(img, dsize=(250, 250), interpolation=cv2.INTER_CUBIC)
-            )
-
         # TODO use the most recent ob to decide what to do
         ac = policy.get_action(ob)
 
         # TODO: take that action and get reward and next ob
-        next_ob, rew, done, info = env.step(ac)
+        next_ob, rew, done = step(ac, problem)
 
         # TODO rollout can end due to done, or due to max_length
         steps += 1
@@ -58,10 +48,9 @@ def sample_trajectory(
             break
 
     episode_statistics = {"l": steps, "r": np.sum(rewards)}
-    if "episode" in info:
-        episode_statistics.update(info["episode"])
+    # if "episode" in info:
+    #     episode_statistics.update(info["episode"])
 
-    env.close()
 
     return {
         "observation": np.array(obs, dtype=np.float32),
@@ -74,34 +63,14 @@ def sample_trajectory(
     }
 
 
-def sample_trajectories(
-    env: gym.Env,
-    policy: MLPPolicy,
-    min_timesteps_per_batch: int,
-    max_length: int,
-    render: bool = False,
-) -> Tuple[List[Dict[str, np.ndarray]], int]:
-    """Collect rollouts using policy until we have collected min_timesteps_per_batch steps."""
-    timesteps_this_batch = 0
-    trajs = []
-    while timesteps_this_batch < min_timesteps_per_batch:
-        # collect rollout
-        traj = sample_trajectory(env, policy, max_length, render)
-        trajs.append(traj)
-
-        # count steps
-        timesteps_this_batch += get_traj_length(traj)
-    return trajs, timesteps_this_batch
-
-
 def sample_n_trajectories(
-    env: gym.Env, policy: MLPPolicy, ntraj: int, max_length: int, render: bool = False
+    policy: MLPPolicy, ntraj: int, max_length: int, render: bool = False, problem=None
 ):
     """Collect ntraj rollouts."""
     trajs = []
     for _ in range(ntraj):
         # collect rollout
-        traj = sample_trajectory(env, policy, max_length, render)
+        traj = sample_trajectory(policy, max_length, render, problem)
         trajs.append(traj)
     return trajs
 
@@ -157,3 +126,74 @@ def convert_listofrollouts(trajs):
 
 def get_traj_length(traj):
     return len(traj["reward"])
+
+
+
+def setup_problem():
+    dynamics = SymbolicDynamics(name="double_integrator_dynamics",
+                                                num_states=2,
+                                                num_inputs=1,
+                                                num_disturbances=1,
+                                                codegen_dir='rhddp.gen')
+
+    cost = SymbolicCost(name="double_integrator_cost",
+                                        num_states=2,
+                                        num_inputs=1,
+                                        codegen_dir='rhddp.gen')
+
+    d_nom = 0.0
+    hyperparams = {"max_iters": 5, 
+                "conv_criterion": 8} 
+
+    settings = {"initial_state": np.array([0, 0]),
+                "horizon": 1000,
+                "d_nom": d_nom,
+                "reset_prop": 0.8,
+                }
+
+    problem = Problem(name="double_integrator_baseline",
+                    dyn=dynamics,
+                    cost=cost,
+                    settings=settings,
+                    hyperparams=hyperparams)
+    return problem
+
+
+
+def reset_env():
+    # try 0->1 or -1->1
+    initial_state = np.random.uniform(-1, 1, 4)
+    return initial_state
+
+def sample_actions():
+    actions = np.random.normal(0, 1, 2)
+    return actions
+
+
+def step(action, problem, k=4):
+    vanilla_controller = RHDDP(problem, action=None)
+    vanilla_solution = vanilla_controller.solve()
+
+    rl_controller = RHDDP(problem, action=action)
+    rl_solution = rl_controller.solve()
+
+    vanilla_x_traj = vanilla_solution.get("x_traj")
+    vanilla_u_traj = vanilla_solution.get("u_traj")
+    vanilla_K_traj = vanilla_solution.get("K_traj")
+
+    rl_x_traj = rl_solution.get("x_traj")
+    rl_u_traj = rl_solution.get("u_traj")
+    rl_K_traj = rl_solution.get("K_traj")
+
+    reward = 0
+    for _ in range(k):
+        #TODO: Draw disturbance:
+        disturbance = np.array([1])
+        c_nom = vanilla_controller.rollout_cost(vanilla_x_traj, vanilla_u_traj, vanilla_K_traj, disturbance)
+        c_rl= rl_controller.rollout_cost(rl_x_traj, rl_u_traj, rl_K_traj, disturbance)
+        reward += (c_nom - c_rl)/c_nom 
+        
+        #TODO: create evaluation function for each, on the disturbance
+    reward /= k
+    # need to roll out and compute cost over disturbances.
+    return np.zeros(4), reward, np.dtype('int32').type(1)

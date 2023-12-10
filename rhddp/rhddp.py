@@ -215,7 +215,7 @@ class RHDDP():
 
 
         px = self._prob.px(x_traj[:, reset], d_nom)
-        if self._action:
+        if self._action is not None:
             px += self._action
 
         delta_val_func[reset] = delta_val_func[reset + 1]

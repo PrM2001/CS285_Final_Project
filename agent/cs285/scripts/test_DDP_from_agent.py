@@ -4,8 +4,6 @@ from rhddp.problem import Problem
 from rhddp.cost import SymbolicCost
 from rhddp.dynamics import SymbolicDynamics
 from rhddp.rhddp import RHDDP
-from rhddp import gen
-
 import os
 import sys
 
@@ -49,20 +47,20 @@ problem = Problem(name="double_integrator_baseline",
 
 # #TODO: draw initial_state, horizon, reset from distributions (horizon uniformly between 100 and 400 maybe), 
 # # reset prop uniformly from 0.2 to 0.8, initial state uniformly around 0,0 (maybe 5 in each direction)
-# initial_state = ...
-# horizon = ...
-# reset_prop = ...
+initial_state = ...
+horizon = ...
+reset_prop = ...
 
-# problem.update(initial_state=initial_state, horizon=horizon, reset_prop=reset_prop)
+problem.update(initial_state=initial_state, horizon=horizon, reset_prop=reset_prop)
 
 # #TODO: draw action from rl agent, given state
-# state = ...
-# action = ...
+state = ...
+action = ...
 
 vanilla_controller = RHDDP(problem, action=None)
 vanilla_solution = vanilla_controller.solve()
 
-rl_controller = RHDDP(problem, action=None)
+rl_controller = RHDDP(problem, action=action)
 rl_solution = rl_controller.solve()
 
 vanilla_x_traj = vanilla_solution.get("x_traj")

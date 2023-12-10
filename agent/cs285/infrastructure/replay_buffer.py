@@ -14,11 +14,11 @@ class ReplayBuffer:
     def sample(self, batch_size):
         rand_indices = np.random.randint(0, self.size, size=(batch_size,)) % self.max_size
         return {
-            "observations": self.observations[rand_indices],
-            "actions": self.actions[rand_indices],
-            "rewards": self.rewards[rand_indices],
-            "next_observations": self.next_observations[rand_indices],
-            "dones": self.dones[rand_indices],
+            "observations": ptu.from_numpy(self.observations[rand_indices]),
+            "actions": ptu.from_numpy(self.actions[rand_indices]),
+            "rewards": ptu.from_numpy(self.rewards[rand_indices]),
+            "next_observations": ptu.from_numpy(self.next_observations[rand_indices]),
+            "dones": ptu.from_numpy(self.dones[rand_indices]),
         }
 
     def __len__(self):

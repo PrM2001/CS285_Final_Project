@@ -9,8 +9,6 @@ import cs285.env_configs
 import os
 import time
 
-import gym
-from gym import wrappers
 import numpy as np
 import torch
 from cs285.infrastructure import pytorch_util as ptu
@@ -19,13 +17,15 @@ import tqdm
 from cs285.infrastructure import utils
 from cs285.infrastructure.logger import Logger
 
-from scripting_utils import make_logger, make_config
+from cs285.scripts.scripting_utils import make_logger, make_config
+
+
 
 import argparse
 
 # Much of the code in run_training_loop stays the same (hopefully)
 # removed the env parts and the parts that forced discrete action spaces
-def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
+def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, problem):
 
     # set random seeds
     np.random.seed(args.seed)
@@ -37,8 +37,8 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     batch_size = config["batch_size"] or batch_size
 
     # hardcode "obs_dim" and "ac_dim" for now with rl_double_integrator_problem values
-    ob_shape = [2]
-    ac_dim = 1
+    ob_shape = [4]
+    ac_dim = 2
     agent = SoftActorCritic(
         ob_shape,
         ac_dim,
@@ -46,38 +46,36 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     )
 
     replay_buffer = ReplayBuffer(config["replay_buffer_capacity"])
-    initial_observation = np.array([0, 0]) # hardcode for now, generate through rl_double_integrator_problem later
+    # initial_observation = np.array([0, 0]) # hardcode for now, generate through rl_double_integrator_problem later
 
     # replace env.reset with initial_observation
-    observation = initial_observation
+    observation = utils.reset_env()
+    problem.update(initial_state=(5 * observation[:2]), horizon=int(250 + 150 * observation[2]), reset_prop=observation[3])
 
     for step in tqdm.trange(config["total_steps"], dynamic_ncols=True):
 
         # TODO: Not sure if we should keep a random step section
         if step < config["random_steps"]:
-            action = env.action_space.sample()
+            action = utils.sample_actions()
         else:
             # TODO(student): Select an action
             action = agent.get_action(observation)
 
         # Step the environment and add the data to the replay buffer
         # TODO: need to replace env.step with RHDDP step
-        next_observation, reward, done, info = env.step(action)
+        next_observation, reward, done = utils.step(action, problem)
         replay_buffer.insert(
             observation=observation,
             action=action,
             reward=reward,
             next_observation=next_observation,
-            done=done and not info.get("TimeLimit.truncated", False),
+            done=done,
         )
 
         # TODO: should be able to simplify this, as done is always True
-        if done:
-            logger.log_scalar(info["episode"]["r"], "train_return", step)
-            logger.log_scalar(info["episode"]["l"], "train_ep_len", step)
-            observation = initial_observation
-        else:
-            observation = next_observation
+        logger.log_scalar(reward, "train_return", step)
+        logger.log_scalar(1, "train_ep_len", step)
+        observation = utils.reset_env()
 
         # Train the agent
         if step >= config["training_starts"]:
@@ -99,10 +97,10 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         # TODO: not exactly sure how we deal with this section that samples trajectories, maybe we should just do logging differently
         if step % args.eval_interval == 0:
             trajectories = utils.sample_n_trajectories(
-                eval_env,
                 policy=agent,
                 ntraj=args.num_eval_trajectories,
                 max_length=ep_len,
+                problem=problem
             )
             returns = [t["episode_statistics"]["r"] for t in trajectories]
             ep_lens = [t["episode_statistics"]["l"] for t in trajectories]
@@ -118,23 +116,24 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
                 logger.log_scalar(np.max(ep_lens), "eval/ep_len_max", step)
                 logger.log_scalar(np.min(ep_lens), "eval/ep_len_min", step)
 
-            if args.num_render_trajectories > 0:
-                video_trajectories = utils.sample_n_trajectories(
-                    render_env,
-                    agent,
-                    args.num_render_trajectories,
-                    ep_len,
-                    render=True,
-                )
+            # if args.num_render_trajectories > 0:
+            #     video_trajectories = utils.sample_n_trajectories(
+            #         render_env,
+            #         agent,
+            #         args.num_render_trajectories,
+            #         ep_len,
+            #         render=True,
+            #     )
 
-                logger.log_paths_as_videos(
-                    video_trajectories,
-                    step,
-                    fps=fps,
-                    max_videos_to_save=args.num_render_trajectories,
-                    video_title="eval_rollouts",
-                )
+            #     logger.log_paths_as_videos(
+            #         video_trajectories,
+            #         step,
+            #         fps=fps,
+            #         max_videos_to_save=args.num_render_trajectories,
+            #         video_title="eval_rollouts",
+            #     )
 
+#region oldcode
 """
 def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     # set random seeds
@@ -254,7 +253,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
                     video_title="eval_rollouts",
                 )
 """
-
+#endregion oldcode
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_file", "-cfg", type=str, required=True)
@@ -271,12 +270,15 @@ def main():
     args = parser.parse_args()
 
     # create directory for logging
-    logdir_prefix = "hw3_sac_"  # keep for autograder
+    logdir_prefix = "fp_"  # keep for autograder
 
     config = make_config(args.config_file)
     logger = make_logger(logdir_prefix, config)
 
-    run_training_loop(config, logger, args)
+    problem = utils.setup_problem()
+    
+    
+    run_training_loop(config, logger, args, problem)
 
 
 if __name__ == "__main__":
