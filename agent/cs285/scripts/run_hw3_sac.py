@@ -38,7 +38,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
 
     # hardcode "obs_dim" and "ac_dim" for now with rl_double_integrator_problem values
     ob_shape = [4]
-    ac_dim = 2
+    ac_dim = 4
     agent = SoftActorCritic(
         ob_shape,
         ac_dim,
@@ -60,6 +60,10 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
         else:
             # TODO(student): Select an action
             action = agent.get_action(observation)
+               
+        action = action.reshape((2,2))
+        print('\naction:', action)
+        
 
         # Step the environment and add the data to the replay buffer
         # TODO: need to replace env.step with RHDDP step
@@ -73,6 +77,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
         )
 
         # TODO: should be able to simplify this, as done is always True
+        print("\nreward:", reward)
         logger.log_scalar(reward, "train_return", step)
         logger.log_scalar(1, "train_ep_len", step)
         observation = utils.reset_env()
@@ -265,7 +270,7 @@ def main():
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--no_gpu", "-ngpu", action="store_true")
     parser.add_argument("--which_gpu", "-g", default=0)
-    parser.add_argument("--log_interval", type=int, default=1000)
+    parser.add_argument("--log_interval", type=int, default=100)
 
     args = parser.parse_args()
 

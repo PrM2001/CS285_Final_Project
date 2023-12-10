@@ -25,7 +25,7 @@ def sample_trajectory(
 
     while True:
         # TODO use the most recent ob to decide what to do
-        ac = policy.get_action(ob)
+        ac = policy.get_action(ob).reshape((2,2))
 
         # TODO: take that action and get reward and next ob
         next_ob, rew, done = step(ac, problem)
@@ -166,7 +166,7 @@ def reset_env():
     return initial_state
 
 def sample_actions():
-    actions = np.random.normal(0, 1, 2)
+    actions = np.random.normal(0, 1, 4)
     return actions
 
 
@@ -188,9 +188,9 @@ def step(action, problem, k=4):
     reward = 0
     for _ in range(k):
         #TODO: Draw disturbance:
-        disturbance = np.array([1])
+        disturbance = np.array([0.0])
         c_nom = vanilla_controller.rollout_cost(vanilla_x_traj, vanilla_u_traj, vanilla_K_traj, disturbance)
-        c_rl= rl_controller.rollout_cost(rl_x_traj, rl_u_traj, rl_K_traj, disturbance)
+        c_rl = rl_controller.rollout_cost(rl_x_traj, rl_u_traj, rl_K_traj, disturbance)
         reward += (c_nom - c_rl)/c_nom 
         
         #TODO: create evaluation function for each, on the disturbance

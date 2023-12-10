@@ -31,6 +31,8 @@ class RHDDP():
 
         x_traj, u_traj, curr_cost = self.initial_rollout(u_traj, K_traj) 
 
+        print(f"Initial cost: {curr_cost}.")
+
         for iter in range(self._prob.max_iters):
             
             if iter > 0 and iter % self._prob.alpha_update_period == 0:
@@ -43,8 +45,10 @@ class RHDDP():
             x_traj, u_traj, curr_cost, converged = self.forward_pass(x_traj, u_traj, k_traj, K_traj, deltaJ, curr_cost)
 
             if converged:
+                print(f"Converged in {iter + 1} of {self._prob.max_iters} iterations. Final cost is {curr_cost}.")
                 break
             else:
+                print(f"finished {iter + 1} of {self._prob.max_iters} iterations. Current cost is {curr_cost}.")
                 pass
                 
         end_time = time.time()
@@ -150,9 +154,12 @@ class RHDDP():
                     converged = True
                     return x_traj, u_traj, cost, converged #do we return the previous worst disturbance and cost?
                 break
-
+            
             eps *= c
-
+            if self._action is not None:
+                print("RL ", eps)
+            else:
+                print("vanilla ", eps) 
         x_traj = traj.x_traj
         u_traj = traj.u_traj
 
@@ -219,8 +226,8 @@ class RHDDP():
             px += self._action
 
         delta_val_func[reset] = delta_val_func[reset + 1]
-        val_func_grad[:,reset] = px.T @ val_func_grad[:,reset + 1] 
-        val_func_hess[:,:,reset] = px.T @ val_func_hess[:,:,reset + 1] @ px
+        val_func_grad[:,reset] = px.T @ next_grad 
+        val_func_hess[:,:,reset] = px.T @ next_hess @ px
 
         for i in reversed(range(reset)):
             x = x_traj[:,i]
