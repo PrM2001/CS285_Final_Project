@@ -8,7 +8,7 @@ exp_name: hsddp_test_0
 base_config: sac
 
 total_steps: 5000
-random_steps: 200
+random_steps: 100
 training_starts: 200  
 
 batch_size: 128
@@ -16,7 +16,7 @@ replay_buffer_capacity: 5000
 
 discount: 0.99
 use_soft_target_update: true
-soft_target_update_rate: 0.005
+soft_target_update_rate: 0.01
 
 actor_gradient_type: reparametrize
 num_critic_updates: 1

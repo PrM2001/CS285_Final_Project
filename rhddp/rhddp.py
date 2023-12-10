@@ -31,7 +31,7 @@ class RHDDP():
 
         x_traj, u_traj, curr_cost = self.initial_rollout(u_traj, K_traj) 
 
-        print(f"Initial cost: {curr_cost}.")
+        self.v_log(f"Initial cost: {curr_cost}.")
 
         for iter in range(self._prob.max_iters):
             
@@ -45,10 +45,10 @@ class RHDDP():
             x_traj, u_traj, curr_cost, converged = self.forward_pass(x_traj, u_traj, k_traj, K_traj, deltaJ, curr_cost)
 
             if converged:
-                print(f"Converged in {iter + 1} of {self._prob.max_iters} iterations. Final cost is {curr_cost}.")
+                self.v_log(f"Converged in {iter + 1} of {self._prob.max_iters} iterations. Final cost is {curr_cost}.")
                 break
             else:
-                print(f"finished {iter + 1} of {self._prob.max_iters} iterations. Current cost is {curr_cost}.")
+                self.v_log(f"finished {iter + 1} of {self._prob.max_iters} iterations. Current cost is {curr_cost}.")
                 pass
                 
         end_time = time.time()
@@ -145,6 +145,11 @@ class RHDDP():
         d_nom = self._prob.d_nom
         
         while True:
+            if self._action is not None:
+                self.v_log(f"RL epsilon: {eps}.")
+            else:
+                self.v_log(f"Vanilla epsilon: {eps}.") 
+
             traj = self.rollout(x_traj=x_traj, u_traj=u_traj, dist=d_nom, 
                                 k_traj=k_traj, K_traj=K_traj, eps=eps, initial=False)
             cost = traj.cost
@@ -156,10 +161,7 @@ class RHDDP():
                 break
             
             eps *= c
-            if self._action is not None:
-                print("RL ", eps)
-            else:
-                print("vanilla ", eps) 
+
         x_traj = traj.x_traj
         u_traj = traj.u_traj
 
@@ -183,10 +185,14 @@ class RHDDP():
         K_traj = np.zeros((num_inputs, num_states, horizon)) # array of K (capital) values, init to all 0
         
 
-        #TODO: remove this next line, just use delta_val_func to calculate deltaJ
-        delta_val_func[-1] = next_delta_val_func = self._prob.phi(x_traj[:,-1])          #TODO This is wrong  # The terminal value function is just l_f(x_N)
-        
+
+        delta_val_func[-1] = next_delta_val_func = self._prob.phi(x_traj[:,-1])          
         val_func_grad[:,-1] = next_grad = self._prob.phix(x_traj[:,-1]) 
+
+        #TODO if all else fails try this
+        # if self._action is not None:
+        #     val_func_grad[:,-1] = next_grad = next_grad + self._action
+
         val_func_hess[:,:,-1] = next_hess = self._prob.phixx(x_traj[:,-1])
 
         deltaJ = 0 
@@ -225,9 +231,9 @@ class RHDDP():
         if self._action is not None:
             px += self._action
 
-        delta_val_func[reset] = delta_val_func[reset + 1]
-        val_func_grad[:,reset] = px.T @ next_grad 
-        val_func_hess[:,:,reset] = px.T @ next_hess @ px
+        delta_val_func[reset] = next_delta_val_func
+        val_func_grad[:,reset] = next_grad = px.T @ next_grad 
+        val_func_hess[:,:,reset] = next_hess = px.T @ next_hess @ px
 
         for i in reversed(range(reset)):
             x = x_traj[:,i]
@@ -293,5 +299,9 @@ class RHDDP():
         rolled_out_traj = self.rollout(x_traj=x_traj, u_traj=u_traj, k_traj=u_traj, dist=disturbance,
                                        K_traj=K_traj, eps=0, initial=False)
         return rolled_out_traj.x_traj, rolled_out_traj.u_traj, rolled_out_traj.cost
+    
+    def v_log(self, to_print):
+        if self._verbose:
+            print(to_print)
 
 

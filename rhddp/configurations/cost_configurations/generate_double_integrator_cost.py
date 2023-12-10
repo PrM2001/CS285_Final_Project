@@ -12,9 +12,9 @@ from rhddp.infrastructure.symbolic_utils import codegen_goal_state_cost
 # R = sf.Matrix(np.diag([2.5]))
 
 
-Q = sf.Matrix(np.array([[0.01,0], [0,0.01]]))#sf.Matrix(np.diag([1,1]))
+Q = sf.Matrix(np.array([[0.1,0], [0,0.1]]))#sf.Matrix(np.diag([1,1]))
 #"best" results with 0.0 instead of 0.1
-Qn = sf.Matrix(np.array([[500,0], [0,1000]]))#Qn = sf.Matrix(np.diag([100,100]))
+Qn = sf.Matrix(np.array([[100,0], [0,100]]))#Qn = sf.Matrix(np.diag([100,100]))
 R = sf.Matrix(np.diag([2.5]))
 
 

@@ -50,7 +50,13 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
 
     # replace env.reset with initial_observation
     observation = utils.reset_env()
-    problem.update(initial_state=(5 * observation[:2]), horizon=int(250 + 150 * observation[2]), reset_prop=observation[3])
+    # print("observation", observation)
+    # print(5 * observation[:2])
+    # print(int(250 + 150 * observation[2]))
+    # print(observation[3] * 0.3 + 0.5)
+
+    #problem.update(initial_state=(5 * observation[:2]), horizon=int(250 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
+    problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
 
     for step in tqdm.trange(config["total_steps"], dynamic_ncols=True):
 
@@ -62,7 +68,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
             action = agent.get_action(observation)
                
         action = action.reshape((2,2))
-        print('\naction:', action)
+        # print('\naction:', action)
         
 
         # Step the environment and add the data to the replay buffer
@@ -77,11 +83,16 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
         )
 
         # TODO: should be able to simplify this, as done is always True
-        print("\nreward:", reward)
+        # print("\nreward:", reward)
         logger.log_scalar(reward, "train_return", step)
         logger.log_scalar(1, "train_ep_len", step)
         observation = utils.reset_env()
-
+        # print("observation", observation)
+        # print(5 * observation[:2])
+        # print(int(250 + 150 * observation[2]))
+        # print(observation[3] * 0.3 + 0.5)
+        # problem.update(initial_state=(5 * observation[:2]), horizon=int(450 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
+        problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
         # Train the agent
         if step >= config["training_starts"]:
             # TODO(student): Sample a batch of config["batch_size"] transitions from the replay buffer

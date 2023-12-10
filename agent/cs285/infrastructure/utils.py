@@ -166,7 +166,7 @@ def reset_env():
     return initial_state
 
 def sample_actions():
-    actions = np.random.normal(0, 1, 4)
+    actions = np.random.normal(0, 0.1, 4)
     return actions
 
 

@@ -31,7 +31,7 @@ gvec[1] = 1/m
 #reset_map = q.col_join(f_r * dq + d)
 
 q_reset = q
-reset_map = q.col_join(dq + 0.5 + d[0]) 
+reset_map = q.col_join(dq + d[0]) 
 
 dt = 0.01
 fvec = fvec.subs(params_dict)
