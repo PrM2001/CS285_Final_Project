@@ -50,11 +50,6 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
 
     # replace env.reset with initial_observation
     observation = utils.reset_env()
-    # print("observation", observation)
-    # print(5 * observation[:2])
-    # print(int(250 + 150 * observation[2]))
-    # print(observation[3] * 0.3 + 0.5)
-
     problem.update(initial_state=(5 * observation[:2]), horizon=int(250 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
     # problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
 
@@ -82,17 +77,16 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
             done=done,
         )
 
-        # TODO: should be able to simplify this, as done is always True
-        # print("\nreward:", reward)
+
         logger.log_scalar(reward, "train_return", step)
         logger.log_scalar(1, "train_ep_len", step)
+
+        #reset the problem
         observation = utils.reset_env()
-        # print("observation", observation)
-        # print(5 * observation[:2])
-        # print(int(250 + 150 * observation[2]))
-        # print(observation[3] * 0.3 + 0.5)
         problem.update(initial_state=(5 * observation[:2]), horizon=int(450 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
         # problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
+
+
         # Train the agent
         if step >= config["training_starts"]:
             # TODO(student): Sample a batch of config["batch_size"] transitions from the replay buffer
@@ -110,7 +104,6 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
                 logger.flush()
 
         # Run evaluation
-        # TODO: not exactly sure how we deal with this section that samples trajectories, maybe we should just do logging differently
         if step % args.eval_interval == 0:
             trajectories = utils.sample_n_trajectories(
                 policy=agent,
@@ -274,8 +267,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_file", "-cfg", type=str, required=True)
 
-    parser.add_argument("--eval_interval", "-ei", type=int, default=5000)
-    parser.add_argument("--num_eval_trajectories", "-neval", type=int, default=10)
+    parser.add_argument("--eval_interval", "-ei", type=int, default=100)
+    parser.add_argument("--num_eval_trajectories", "-neval", type=int, default=5)
     parser.add_argument("--num_render_trajectories", "-nvid", type=int, default=0)
 
     parser.add_argument("--seed", type=int, default=1)
