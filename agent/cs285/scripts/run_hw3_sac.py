@@ -55,8 +55,8 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
     # print(int(250 + 150 * observation[2]))
     # print(observation[3] * 0.3 + 0.5)
 
-    #problem.update(initial_state=(5 * observation[:2]), horizon=int(250 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
-    problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
+    problem.update(initial_state=(5 * observation[:2]), horizon=int(250 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
+    # problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
 
     for step in tqdm.trange(config["total_steps"], dynamic_ncols=True):
 
@@ -91,8 +91,8 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
         # print(5 * observation[:2])
         # print(int(250 + 150 * observation[2]))
         # print(observation[3] * 0.3 + 0.5)
-        # problem.update(initial_state=(5 * observation[:2]), horizon=int(450 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
-        problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
+        problem.update(initial_state=(5 * observation[:2]), horizon=int(450 + 150 * observation[2]), reset_prop=(observation[3] * 0.3 + 0.5))
+        # problem.update(initial_state=np.array([-5, 0]), horizon=500, reset_prop=0.8)
         # Train the agent
         if step >= config["training_starts"]:
             # TODO(student): Sample a batch of config["batch_size"] transitions from the replay buffer

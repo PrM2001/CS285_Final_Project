@@ -31,7 +31,7 @@ class RHDDP():
 
         x_traj, u_traj, curr_cost = self.initial_rollout(u_traj, K_traj) 
 
-        self.v_log(f"Initial cost: {curr_cost}.")
+        # self.v_log(f"Initial cost: {curr_cost}.")
 
         for iter in range(self._prob.max_iters):
             
@@ -44,12 +44,12 @@ class RHDDP():
             k_traj, K_traj, deltaJ = self.backward_pass(x_traj, u_traj)
             x_traj, u_traj, curr_cost, converged = self.forward_pass(x_traj, u_traj, k_traj, K_traj, deltaJ, curr_cost)
 
-            if converged:
-                self.v_log(f"Converged in {iter + 1} of {self._prob.max_iters} iterations. Final cost is {curr_cost}.")
-                break
-            else:
-                self.v_log(f"finished {iter + 1} of {self._prob.max_iters} iterations. Current cost is {curr_cost}.")
-                pass
+            # if converged:
+            #     self.v_log(f"Converged in {iter + 1} of {self._prob.max_iters} iterations. Final cost is {curr_cost}.")
+            #     break
+            # else:
+            #     self.v_log(f"finished {iter + 1} of {self._prob.max_iters} iterations. Current cost is {curr_cost}.")
+            #     pass
                 
         end_time = time.time()
         elapsed_time = end_time - start_time
@@ -145,10 +145,10 @@ class RHDDP():
         d_nom = self._prob.d_nom
         
         while True:
-            if self._action is not None:
-                self.v_log(f"RL epsilon: {eps}.")
-            else:
-                self.v_log(f"Vanilla epsilon: {eps}.") 
+            # if self._action is not None:
+            #     self.v_log(f"RL epsilon: {eps}.")
+            # else:
+            #     self.v_log(f"Vanilla epsilon: {eps}.") 
 
             traj = self.rollout(x_traj=x_traj, u_traj=u_traj, dist=d_nom, 
                                 k_traj=k_traj, K_traj=K_traj, eps=eps, initial=False)
