@@ -68,7 +68,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace, pr
 
         # Step the environment and add the data to the replay buffer
         # TODO: need to replace env.step with RHDDP step
-        next_observation, reward, done = utils.step(action, problem)
+        next_observation, reward, done = utils.step(action, problem, initial_disturbance=config["disturbance"])
         replay_buffer.insert(
             observation=observation,
             action=action,

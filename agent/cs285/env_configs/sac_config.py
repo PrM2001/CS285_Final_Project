@@ -45,6 +45,7 @@ def sac_config(
     temperature: float = 0.1,
     actor_fixed_std: Optional[float] = None,
     use_tanh: bool = True,
+    disturbance: float = 1
 ):
     def make_critic(observation_shape: Tuple[int, ...], action_dim: int) -> nn.Module:
         return StateActionCritic(
@@ -157,5 +158,6 @@ def sac_config(
         "training_starts": training_starts,
         "ep_len": ep_len,
         "batch_size": batch_size,
+        "disturbance": disturbance
         # "make_env": make_env,
     }

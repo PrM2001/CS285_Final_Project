@@ -170,7 +170,7 @@ def sample_actions():
     return actions
 
 
-def step(action, problem, k=4):
+def step(action, problem, k=4, initial_disturbance=1):
     vanilla_controller = RHDDP(problem, action=None)
     vanilla_solution = vanilla_controller.solve()
 
@@ -188,7 +188,7 @@ def step(action, problem, k=4):
     reward = 0
     for _ in range(k):
         #TODO: Draw disturbance:
-        disturbance = np.array([1])
+        disturbance = np.array([initial_disturbance])
         c_nom = vanilla_controller.rollout_cost(vanilla_x_traj, vanilla_u_traj, vanilla_K_traj, disturbance)
         c_rl = rl_controller.rollout_cost(rl_x_traj, rl_u_traj, rl_K_traj, disturbance)
         reward += (c_nom - c_rl)/c_nom 
