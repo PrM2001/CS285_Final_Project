@@ -462,7 +462,7 @@ class SoftActorCritic(nn.Module):
         """
         Update the actor and critic networks.
         """
-
+        actions = actions.reshape((128, 4))
         critic_infos = []
         # TODO(student): Update the critic for num_critic_upates steps, and add the output stats to critic_infos
         for _ in range(self.num_critic_updates):

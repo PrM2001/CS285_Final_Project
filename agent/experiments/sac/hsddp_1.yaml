@@ -9,7 +9,7 @@ base_config: sac
 
 total_steps: 5000
 random_steps: 100
-training_starts: 200  
+training_starts: 0  
 
 batch_size: 128
 replay_buffer_capacity: 5000
