@@ -2,7 +2,7 @@
 num_critic_networks: 2
 target_critic_backup_type: min
 
-exp_name: hsddp_test_0
+exp_name: hsddp_test_1_25
 
 # All these are the same as from the last problem...
 base_config: sac
@@ -24,4 +24,4 @@ num_critic_updates: 1
 use_entropy_bonus: true
 temperature: 0.05
 
-disturbance: 0.2
+disturbance: 1.25

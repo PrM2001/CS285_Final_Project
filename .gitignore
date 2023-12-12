@@ -1,6 +1,9 @@
-gen/
-data/
+*/gen/*
+*/data/*
 *.pyc
 *.csv
 *.mat
 *.png
+*/__pycache__/*
+*/google_cloud/*
+*/.DS_Store
