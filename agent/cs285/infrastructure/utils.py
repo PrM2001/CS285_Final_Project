@@ -191,7 +191,7 @@ def step(action, problem, k=4, initial_disturbance=1):
         disturbance = np.array([initial_disturbance])
         c_nom = vanilla_controller.rollout_cost(vanilla_x_traj, vanilla_u_traj, vanilla_K_traj, disturbance)
         c_rl = rl_controller.rollout_cost(rl_x_traj, rl_u_traj, rl_K_traj, disturbance)
-        reward += (c_nom - c_rl)/c_nom 
+        reward += (c_nom - c_rl)/c_nom - (0.001 * np.linalg.norm(action)) 
         
         #TODO: create evaluation function for each, on the disturbance
     reward /= k
